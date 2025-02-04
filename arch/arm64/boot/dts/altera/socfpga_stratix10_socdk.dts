@@ -11,13 +11,14 @@
 
 	aliases {
 		serial0 = &uart0;
+		serial1 = &uart1;
 		ethernet0 = &gmac0;
 		ethernet1 = &gmac1;
 		ethernet2 = &gmac2;
 	};
 
 	chosen {
-		stdout-path = "serial0:115200n8";
+		stdout-path = "serial1:115200n8";
 	};
 
 	leds {
@@ -41,6 +42,7 @@
 	memory@80000000 {
 		device_type = "memory";
 		/* We expect the bootloader to fill in the reg */
+		/* On the beamforming board, we only have 2GiB of DDR4 */
 		reg = <0 0x80000000 0 0>;
 	};
 
@@ -85,32 +87,46 @@
 	status = "okay";
 };
 
-&gmac0 {
+&gmac1 {
 	status = "okay";
 	phy-mode = "rgmii";
-	phy-handle = <&phy0>;
+	phy-handle = <&phy1>;
 
 	max-frame-size = <9000>;
 
-	mdio0 {
+	mdio {
 		#address-cells = <1>;
 		#size-cells = <0>;
 		compatible = "snps,dwmac-mdio";
-		phy0: ethernet-phy@0 {
-			reg = <4>;
+		max-speed = <100>;
 
-			txd0-skew-ps = <0>; /* -420ps */
-			txd1-skew-ps = <0>; /* -420ps */
-			txd2-skew-ps = <0>; /* -420ps */
-			txd3-skew-ps = <0>; /* -420ps */
-			rxd0-skew-ps = <420>; /* 0ps */
-			rxd1-skew-ps = <420>; /* 0ps */
-			rxd2-skew-ps = <420>; /* 0ps */
-			rxd3-skew-ps = <420>; /* 0ps */
-			txen-skew-ps = <0>; /* -420ps */
-			txc-skew-ps = <900>; /* 0ps */
-			rxdv-skew-ps = <420>; /* 0ps */
-			rxc-skew-ps = <1680>; /* 780ps */
+		/* looking at the strap-ins on phy.schdoc(M) of Jingwangs schematic.
+					PHYAD0: 1
+					PHYAD1: 0
+					PHYAD2: 1
+			The phy address, PHYAD[2:0], is sampled and latched at powerup/reset.
+			Pull-up = 1, Pull-down = 0.
+			PHYAD[4:3] = 00.
+			PHYAD[2:0] = 0b101 -> 0x5
+			PHYAD[4:0] = 0b00101 -> 0x5
+
+			See datasheet for more information.
+			https://ww1.microchip.com/downloads/en/DeviceDoc/00002117F.pdf
+		*/
+		phy1: ethernet-phy@5 {
+			reg = <5>;
+			rxd0-skew-ps = <480>;
+			rxd1-skew-ps = <480>;
+			rxd2-skew-ps = <480>;
+			rxd3-skew-ps = <480>;
+			rxdv-skew-ps = <480>;
+			txd0-skew-ps = <360>;
+			txd1-skew-ps = <360>;
+			txd2-skew-ps = <360>;
+			txd3-skew-ps = <360>;
+			txen-skew-ps = <360>;
+			rxc-skew-ps = <1680>;
+			txc-skew-ps = <1800>;
 		};
 	};
 };
@@ -125,11 +141,16 @@
 };
 
 &osc1 {
-	clock-frequency = <25000000>;
+	clock-frequency = <125000000>;
 };
 
 &uart0 {
 	status = "okay";
+};
+
+&uart1 {
+	status = "okay";
+	// clock-frequency = <100000000>;
 };
 
 &usb0 {
