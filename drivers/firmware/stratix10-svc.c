@@ -1265,7 +1265,8 @@ static int svc_normal_to_secure_thread(void *data)
 			break;
 		case INTEL_SIP_SMC_STATUS_ERROR:
 		case INTEL_SIP_SMC_RSU_ERROR:
-			pr_err("%s: STATUS_ERROR\n", __func__);
+			// TODO (Cameron)
+			pr_debug("%s: STATUS_ERROR\n", __func__);
 			cbdata->status = BIT(SVC_STATUS_ERROR);
 			cbdata->kaddr1 = &res.a1;
 			cbdata->kaddr2 = (res.a2) ?
