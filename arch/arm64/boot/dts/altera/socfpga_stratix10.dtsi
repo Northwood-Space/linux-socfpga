@@ -7,6 +7,7 @@
 #include <dt-bindings/reset/altr,rst-mgr-s10.h>
 #include <dt-bindings/gpio/gpio.h>
 #include <dt-bindings/clock/stratix10-clock.h>
+#include <dt-bindings/interrupt-controller/irq.h>
 
 / {
 	compatible = "altr,socfpga-stratix10";
@@ -122,6 +123,13 @@
 			#clock-cells = <0>;
 			compatible = "fixed-clock";
 			clock-frequency = <200000000>;
+		};
+
+		clk_100: clk_100 {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <100000000>;
+			clock-output-names = "clk_100-out_clk";
 		};
 	};
 
@@ -400,6 +408,30 @@
 			status = "disabled";
 		};
 
+		// it is absolute dogshit that the offset here does not appear anywhere in QSYS files.
+		// h2f_lw_axi_master - 0xf900_0000
+		// spi_cs_pio - 0x8_0000
+		// final address: 0xf908_0000
+		spi_cs_pio: gpio@f9080000 {
+			compatible = "altr,pio-1.0";
+			// we are only using 11 of the 32 addresses
+			// https://www.intel.com/content/www/us/en/docs/programmable/683838/20-3/building-linux.html
+			// unsure if we need to map all of these or what
+			reg = <0xf9080000 0x00000020>;
+			clocks = <&clk_100>;
+			#gpio-cells = <2>;
+			altr,ngpio = <11>;
+			gpio-controller;
+			status = "okay";
+			// yeah the driver documentation says these are
+			// required fields but surprise surprise - they are not.
+			//
+			// interrupts = <0 45 4>;
+			// altr,interrupt-type = <IRQ_TYPE_EDGE_RISING>;
+			// #interrupt-cells = <2>;
+			// interrupt-controller;
+		};
+
 		spi0: spi@ffda4000 {
 			compatible = "snps,dw-apb-ssi";
 			#address-cells = <1>;
@@ -409,7 +441,6 @@
 			resets = <&rst SPIM0_RESET>;
 			reset-names = "spi";
 			reg-io-width = <4>;
-			num-cs = <4>;
 			clocks = <&clkmgr STRATIX10_L4_MAIN_CLK>;
 			status = "disabled";
 		};

@@ -6,85 +6,25 @@
 #include "socfpga_stratix10.dtsi"
 
 / {
-	model = "SoCFPGA Stratix 10 SoCDK";
+	model = "Northwood Beamformer Board Rev-A";
 	compatible = "altr,socfpga-stratix10-socdk", "altr,socfpga-stratix10";
 
 	aliases {
-		serial0 = &uart0;
 		serial1 = &uart1;
-		ethernet0 = &gmac0;
 		ethernet1 = &gmac1;
-		ethernet2 = &gmac2;
 	};
 
 	chosen {
 		stdout-path = "serial1:115200n8";
 	};
 
-	leds {
-		compatible = "gpio-leds";
-		led-hps0 {
-			label = "hps_led0";
-			gpios = <&portb 20 GPIO_ACTIVE_HIGH>;
-		};
-
-		led-hps1 {
-			label = "hps_led1";
-			gpios = <&portb 19 GPIO_ACTIVE_HIGH>;
-		};
-
-		led-hps2 {
-			label = "hps_led2";
-			gpios = <&portb 21 GPIO_ACTIVE_HIGH>;
-		};
-	};
-
+	// this might need to be 
 	memory@80000000 {
 		device_type = "memory";
 		/* We expect the bootloader to fill in the reg */
 		/* On the beamforming board, we only have 2GiB of DDR4 */
 		reg = <0 0x80000000 0 0>;
 	};
-
-	ref_033v: regulator-v-ref {
-		compatible = "regulator-fixed";
-		regulator-name = "0.33V";
-		regulator-min-microvolt = <330000>;
-		regulator-max-microvolt = <330000>;
-	};
-
-	soc {
-		eccmgr {
-			sdmmca-ecc@ff8c8c00 {
-				compatible = "altr,socfpga-s10-sdmmc-ecc",
-					     "altr,socfpga-sdmmc-ecc";
-				reg = <0xff8c8c00 0x100>;
-				altr,ecc-parent = <&mmc>;
-				interrupts = <14 4>,
-					     <15 4>;
-			};
-		};
-	};
-};
-
-&pinctrl0 {
-	i2c1_pmx_func: i2c1-pmx-func {
-		pinctrl-single,pins = <
-			0x78   0x4   /* I2C1_SDA (IO6-B) PIN30SEL) */
-			0x7c   0x4   /* I2C1_SCL (IO7-B) PIN31SEL */
-		>;
-	};
-
-	i2c1_pmx_func_gpio: i2c1-pmx-func-gpio {
-		pinctrl-single,pins = <
-			0x78   0x8   /* I2C1_SDA (IO6-B) PIN30SEL) */
-			0x7c   0x8   /* I2C1_SCL (IO7-B) PIN31SEL */
-		>;
-	};
-};
-
-&gpio1 {
-	status = "okay";
 };
 
 &gmac1 {
@@ -92,13 +32,10 @@
 	phy-mode = "rgmii";
 	phy-handle = <&phy1>;
 
-	max-frame-size = <9000>;
-
 	mdio {
 		#address-cells = <1>;
 		#size-cells = <0>;
 		compatible = "snps,dwmac-mdio";
-		max-speed = <100>;
 
 		/* looking at the strap-ins on phy.schdoc(M) of Jingwangs schematic.
 					PHYAD0: 1
@@ -131,71 +68,17 @@
 	};
 };
 
-&mmc {
-	status = "okay";
-	cap-sd-highspeed;
-	cap-mmc-highspeed;
-	broken-cd;
-	bus-width = <4>;
-	clk-phase-sd-hs = <0>, <135>;
-};
-
+// TODO(cameron) - where does quartus set this?
 &osc1 {
 	clock-frequency = <125000000>;
 };
 
-&uart0 {
-	status = "okay";
-};
-
 &uart1 {
 	status = "okay";
-	// clock-frequency = <100000000>;
-};
-
-&usb0 {
-	status = "okay";
-	disable-over-current;
 };
 
 &watchdog0 {
 	status = "okay";
-};
-
-&i2c1 {
-	status = "okay";
-	clock-frequency = <100000>;
-	i2c-sda-falling-time-ns = <890>;  /* hcnt */
-	i2c-scl-falling-time-ns = <890>;  /* lcnt */
-
-	pinctrl-names = "default", "gpio";
-	pinctrl-0 = <&i2c1_pmx_func>;
-	pinctrl-1 = <&i2c1_pmx_func_gpio>;
-
-	scl-gpios = <&portb 6 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-	sda-gpios = <&portb 7 (GPIO_ACTIVE_HIGH | GPIO_OPEN_DRAIN)>;
-
-	adc@14 {
-		compatible = "lltc,ltc2497";
-		reg = <0x14>;
-		vref-supply = <&ref_033v>;
-	};
-
-	temp@4c {
-		compatible = "maxim,max1619";
-		reg = <0x4c>;
-	};
-
-	eeprom@51 {
-		compatible = "atmel,24c32";
-		reg = <0x51>;
-		pagesize = <32>;
-	};
-
-	rtc@68 {
-		compatible = "dallas,ds1339";
-		reg = <0x68>;
-	};
 };
 
 &qspi {
@@ -266,3 +149,113 @@
 	};
 };
 
+&spi0 {
+	cs-gpios = <&spi_cs_pio 0 GPIO_ACTIVE_LOW>,
+						 <&spi_cs_pio 1 GPIO_ACTIVE_LOW>,
+						 <&spi_cs_pio 2 GPIO_ACTIVE_LOW>,
+						 <&spi_cs_pio 3 GPIO_ACTIVE_LOW>,
+						 <&spi_cs_pio 4 GPIO_ACTIVE_LOW>,
+						 <&spi_cs_pio 5 GPIO_ACTIVE_LOW>,
+						 <&spi_cs_pio 6 GPIO_ACTIVE_LOW>,
+						 <&spi_cs_pio 7 GPIO_ACTIVE_LOW>,
+						 <&spi_cs_pio 8 GPIO_ACTIVE_LOW>,
+						 <&spi_cs_pio 9 GPIO_ACTIVE_LOW>,
+						 <&spi_cs_pio 10 GPIO_ACTIVE_LOW>;
+
+	status = "okay";
+	spidev@0 {
+      /* chip select 0 */
+      reg = <0>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+  spidev@1 {
+      /* chip select 1 */
+      reg = <1>;
+      spi-max-frequency = <1000000>;
+      compatible = "rohm,dh2228fv";
+  };
+  spidev@2 {
+      /* chip select 2 */
+      reg = <2>;
+      spi-max-frequency = <1000000>;
+      compatible = "rohm,dh2228fv";
+  };
+  spidev@3 {
+      /* chip select 3 */
+      reg = <3>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+  spidev@4 {
+      /* chip select 4 */
+      reg = <4>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+	spidev@5 {
+      /* chip select 5 */
+      reg = <5>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+	spidev@6 {
+      /* chip select 6 */
+      reg = <6>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+	spidev@7 {
+      /* chip select 7 */
+      reg = <7>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+	spidev@8 {
+      /* chip select 8 */
+      reg = <8>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+	spidev@9 {
+      /* chip select 9 */
+      reg = <9>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+	spidev@a {
+      /* chip select 10 */
+      reg = <0xa>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+};
+
+&spi1 {
+	status = "okay";
+	num-cs = <4>;
+	spidev@0 {
+      /* chip select 0 */
+      reg = <0>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+  spidev@1 {
+      /* chip select 1 */
+      reg = <1>;
+      spi-max-frequency = <1000000>;
+      compatible = "rohm,dh2228fv";
+  };
+  spidev@2 {
+      /* chip select 2 */
+      reg = <2>;
+      spi-max-frequency = <1000000>;
+      compatible = "rohm,dh2228fv";
+  };
+  spidev@3 {
+      /* chip select 3 */
+      reg = <3>;
+      compatible = "rohm,dh2228fv";
+      spi-max-frequency = <1000000>;
+  };
+};
