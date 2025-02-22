@@ -89,6 +89,7 @@ void dw_spi_set_cs(struct spi_device *spi, bool enable)
 {
 	struct dw_spi *dws = spi_controller_get_devdata(spi->controller);
 	bool cs_high = !!(spi->mode & SPI_CS_HIGH);
+	dev_err(&dws->host->dev, "CS_HIGH: %d. Enable: %d", cs_high, enable);
 
 	/*
 	 * DW SPI controller demands any native CS being set in order to
@@ -429,6 +430,8 @@ static int dw_spi_transfer_one(struct spi_controller *host,
 	dws->tx_len = transfer->len / dws->n_bytes;
 	dws->rx = transfer->rx_buf;
 	dws->rx_len = dws->tx_len;
+	
+	dev_err(&dws->host->dev, "transfer: %d (tx) %d (rx)\n", dws->tx_len, dws->rx_len);
 
 	/* Ensure the data above is visible for all CPUs */
 	smp_mb();
@@ -440,24 +443,35 @@ static int dw_spi_transfer_one(struct spi_controller *host,
 	transfer->effective_speed_hz = dws->current_freq;
 
 	/* Check if current transfer is a DMA transaction */
-	if (host->can_dma && host->can_dma(host, spi, transfer))
+	if (host->can_dma && host->can_dma(host, spi, transfer)) {
+		dev_err(&dws->host->dev, "can_dma transaction");
 		dws->dma_mapped = host->cur_msg_mapped;
+	}
 
 	/* For poll mode just disable all interrupts */
 	dw_spi_mask_intr(dws, 0xff);
 
 	if (dws->dma_mapped) {
 		ret = dws->dma_ops->dma_setup(dws, transfer);
+		dev_err(&dws->host->dev, "dmap mapped: %d", ret);
 		if (ret)
 			return ret;
 	}
 
 	dw_spi_enable_chip(dws, 1);
 
-	if (dws->dma_mapped)
-		return dws->dma_ops->dma_transfer(dws, transfer);
-	else if (dws->irq == IRQ_NOTCONNECTED)
-		return dw_spi_poll_transfer(dws, transfer);
+	if (dws->dma_mapped) {
+		ret = dws->dma_ops->dma_transfer(dws, transfer);
+		dev_err(&dws->host->dev, "dma_transfer: %d", ret);
+		return ret;
+	}
+	else if (dws->irq == IRQ_NOTCONNECTED) {
+		ret = dw_spi_poll_transfer(dws, transfer);
+		dev_err(&dws->host->dev, "IRQ_NOTCONNECTED: %d", ret);
+		return ret;
+	} else {
+		dev_err(&dws->host->dev, "Absurd (nothing)." );
+	}
 
 	dw_spi_irq_setup(dws);
 
@@ -764,11 +778,14 @@ static void dw_spi_init_mem_ops(struct dw_spi *dws)
 {
 	if (!dws->mem_ops.exec_op && !(dws->caps & DW_SPI_CAP_CS_OVERRIDE) &&
 	    !dws->set_cs) {
+		dev_err(&dws->host->dev, "CS Override using dw_spi_exec_mem_op");
 		dws->mem_ops.adjust_op_size = dw_spi_adjust_mem_op_size;
 		dws->mem_ops.supports_op = dw_spi_supports_mem_op;
 		dws->mem_ops.exec_op = dw_spi_exec_mem_op;
 		if (!dws->max_mem_freq)
 			dws->max_mem_freq = dws->max_freq;
+	} else {
+		dev_err(&dws->host->dev, "No CS Override");
 	}
 }
 
@@ -911,7 +928,7 @@ int dw_spi_add_host(struct device *dev, struct dw_spi *dws)
 		goto err_free_host;
 	}
 
-	dw_spi_init_mem_ops(dws);
+	/* dw_spi_init_mem_ops(dws); */
 
 	host->use_gpio_descriptors = true;
 	host->mode_bits = SPI_CPOL | SPI_CPHA | SPI_LOOP;
@@ -923,10 +940,13 @@ int dw_spi_add_host(struct device *dev, struct dw_spi *dws)
 	host->num_chipselect = dws->num_cs;
 	host->setup = dw_spi_setup;
 	host->cleanup = dw_spi_cleanup;
-	if (dws->set_cs)
+	if (dws->set_cs) {
+		dev_warn(dev, "Using dws->set_cs \n");
 		host->set_cs = dws->set_cs;
-	else
+	} else {
+		dev_warn(dev, "Using dw_spi_set_cs \n");
 		host->set_cs = dw_spi_set_cs;
+	}
 	host->transfer_one = dw_spi_transfer_one;
 	host->handle_err = dw_spi_handle_err;
 	if (dws->mem_ops.exec_op)
@@ -944,7 +964,7 @@ int dw_spi_add_host(struct device *dev, struct dw_spi *dws)
 		if (ret == -EPROBE_DEFER) {
 			goto err_free_irq;
 		} else if (ret) {
-			dev_warn(dev, "DMA init failed\n");
+			dev_warn(dev, "DMA init failed: %d\n", ret);
 		} else {
 			host->can_dma = dws->dma_ops->can_dma;
 			host->flags |= SPI_CONTROLLER_MUST_TX;

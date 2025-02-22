@@ -823,8 +823,9 @@ struct dma_chan *dma_request_chan(struct device *dev, const char *name)
 	if (has_acpi_companion(dev) && !chan)
 		chan = acpi_dma_request_slave_chan_by_name(dev, name);
 
-	if (PTR_ERR(chan) == -EPROBE_DEFER)
+	if (PTR_ERR(chan) == -EPROBE_DEFER) {
 		return chan;
+	}
 
 	if (!IS_ERR_OR_NULL(chan))
 		goto found;

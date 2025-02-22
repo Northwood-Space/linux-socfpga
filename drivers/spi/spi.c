@@ -1710,7 +1710,7 @@ static int __spi_pump_transfer_message(struct spi_controller *ctlr,
 	ret = ctlr->transfer_one_message(ctlr, msg);
 	if (ret) {
 		dev_err(&ctlr->dev,
-			"failed to transfer one message from queue\n");
+			"failed to transfer one message from queue: %d\n", ret);
 		return ret;
 	}
 
@@ -2168,8 +2168,10 @@ static int spi_controller_initialize_queue(struct spi_controller *ctlr)
 	int ret;
 
 	ctlr->transfer = spi_queued_transfer;
-	if (!ctlr->transfer_one_message)
+	if (!ctlr->transfer_one_message) {
+		dev_err(&ctlr->dev, "using default spi_transfer_one_message\n");
 		ctlr->transfer_one_message = spi_transfer_one_message;
+	}
 
 	/* Initialize and start queue */
 	ret = spi_init_queue(ctlr);
@@ -4176,7 +4178,7 @@ static void __spi_transfer_message_noqueue(struct spi_controller *ctlr, struct s
 	ctlr->cur_msg = msg;
 	ret = __spi_pump_transfer_message(ctlr, msg, was_busy);
 	if (ret)
-		dev_err(&ctlr->dev, "noqueue transfer failed\n");
+		dev_err(&ctlr->dev, "noqueue transfer failed: %d\n", ret);
 	ctlr->cur_msg = NULL;
 	ctlr->fallback = false;
 

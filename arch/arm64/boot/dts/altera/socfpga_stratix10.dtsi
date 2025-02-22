@@ -518,33 +518,6 @@
 			status = "disabled";
 		};
 
-		usb0: usb@ffb00000 {
-			compatible = "snps,dwc2";
-			reg = <0xffb00000 0x40000>;
-			interrupts = <0 93 4>;
-			phys = <&usbphy0>;
-			phy-names = "usb2-phy";
-			resets = <&rst USB0_RESET>, <&rst USB0_OCP_RESET>;
-			reset-names = "dwc2", "dwc2-ecc";
-			clocks = <&clkmgr STRATIX10_USB_CLK>;
-			clock-names = "otg";
-			iommus = <&smmu 6>;
-			status = "disabled";
-		};
-
-		usb1: usb@ffb40000 {
-			compatible = "snps,dwc2";
-			reg = <0xffb40000 0x40000>;
-			interrupts = <0 94 4>;
-			phys = <&usbphy0>;
-			phy-names = "usb2-phy";
-			resets = <&rst USB1_RESET>, <&rst USB1_OCP_RESET>;
-			reset-names = "dwc2", "dwc2-ecc";
-			clocks = <&clkmgr STRATIX10_USB_CLK>;
-			iommus = <&smmu 7>;
-			status = "disabled";
-		};
-
 		watchdog0: watchdog@ffd00200 {
 			compatible = "snps,dw-wdt";
 			reg = <0xffd00200 0x100>;
@@ -611,14 +584,6 @@
 				interrupts = <1 4>;
 			};
 
-			usb0-ecc@ff8c4000 {
-				compatible = "altr,socfpga-s10-usb-ecc",
-					     "altr,socfpga-usb-ecc";
-				reg = <0xff8c4000 0x100>;
-				altr,ecc-parent = <&usb0>;
-				interrupts = <2 4>;
-			};
-
 			emac0-rx-ecc@ff8c0000 {
 				compatible = "altr,socfpga-s10-eth-mac-ecc",
 					     "altr,socfpga-eth-mac-ecc";
@@ -672,10 +637,5 @@
 				};
 			};
 		};
-	};
-
-	usbphy0: usbphy0 {
-		compatible = "usb-nop-xceiv";
-		#phy-cells = <0>;
 	};
 };
