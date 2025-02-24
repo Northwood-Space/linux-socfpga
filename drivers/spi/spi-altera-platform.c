@@ -59,14 +59,29 @@ static int altera_spi_probe(struct platform_device *pdev)
 			goto exit;
 		}
 
+		dev_dbg(&pdev->dev,
+			    "%s:%s:%d using host config from platform data.\n",
+			    __FILE__, __func__, __LINE__);
+
 		host->num_chipselect = pdata->num_chipselect;
 		host->mode_bits = pdata->mode_bits;
 		host->bits_per_word_mask = pdata->bits_per_word_mask;
 	} else {
+	dev_err(&pdev->dev,
+			    "%s:%s:%d using default host config.\n",
+			    __FILE__, __func__, __LINE__);
+
 		host->num_chipselect = 16;
 		host->mode_bits = SPI_CS_HIGH;
 		host->bits_per_word_mask = SPI_BPW_RANGE_MASK(1, 16);
 	}
+
+	dev_dbg(&pdev->dev,
+			    "%s:%s:%d num-cs: %u. mode_bits %u. bits_per_word_mask: %u.\n",
+			    __FILE__, __func__, __LINE__,
+			   host->num_chipselect,
+			   host->mode_bits,
+			   host->bits_per_word_mask);
 
 	host->dev.of_node = pdev->dev.of_node;
 

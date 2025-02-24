@@ -431,7 +431,7 @@ static int dw_spi_transfer_one(struct spi_controller *host,
 	dws->rx = transfer->rx_buf;
 	dws->rx_len = dws->tx_len;
 	
-	dev_err(&dws->host->dev, "transfer: %d (tx) %d (rx)\n", dws->tx_len, dws->rx_len);
+	dev_dbg(&dws->host->dev, "transfer: %d (tx) %d (rx)\n", dws->tx_len, dws->rx_len);
 
 	/* Ensure the data above is visible for all CPUs */
 	smp_mb();
@@ -444,7 +444,7 @@ static int dw_spi_transfer_one(struct spi_controller *host,
 
 	/* Check if current transfer is a DMA transaction */
 	if (host->can_dma && host->can_dma(host, spi, transfer)) {
-		dev_err(&dws->host->dev, "can_dma transaction");
+		dev_dbg(&dws->host->dev, "can_dma transaction");
 		dws->dma_mapped = host->cur_msg_mapped;
 	}
 
@@ -453,7 +453,7 @@ static int dw_spi_transfer_one(struct spi_controller *host,
 
 	if (dws->dma_mapped) {
 		ret = dws->dma_ops->dma_setup(dws, transfer);
-		dev_err(&dws->host->dev, "dmap mapped: %d", ret);
+		dev_dbg(&dws->host->dev, "dmap mapped: %d", ret);
 		if (ret)
 			return ret;
 	}
@@ -462,15 +462,17 @@ static int dw_spi_transfer_one(struct spi_controller *host,
 
 	if (dws->dma_mapped) {
 		ret = dws->dma_ops->dma_transfer(dws, transfer);
-		dev_err(&dws->host->dev, "dma_transfer: %d", ret);
+		dev_dbg(&dws->host->dev, "dma_transfer: %d", ret);
 		return ret;
 	}
 	else if (dws->irq == IRQ_NOTCONNECTED) {
 		ret = dw_spi_poll_transfer(dws, transfer);
-		dev_err(&dws->host->dev, "IRQ_NOTCONNECTED: %d", ret);
+		dev_dbg(&dws->host->dev, "IRQ_NOTCONNECTED: %d", ret);
 		return ret;
 	} else {
-		dev_err(&dws->host->dev, "Absurd (nothing)." );
+		ret = dw_spi_poll_transfer(dws, transfer);
+		dev_dbg(&dws->host->dev, "IRQ_NOTCONNECTED: %d", ret);
+		return ret;
 	}
 
 	dw_spi_irq_setup(dws);
@@ -928,7 +930,7 @@ int dw_spi_add_host(struct device *dev, struct dw_spi *dws)
 		goto err_free_host;
 	}
 
-	/* dw_spi_init_mem_ops(dws); */
+	dw_spi_init_mem_ops(dws);
 
 	host->use_gpio_descriptors = true;
 	host->mode_bits = SPI_CPOL | SPI_CPHA | SPI_LOOP;
