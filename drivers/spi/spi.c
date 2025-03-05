@@ -2169,7 +2169,6 @@ static int spi_controller_initialize_queue(struct spi_controller *ctlr)
 
 	ctlr->transfer = spi_queued_transfer;
 	if (!ctlr->transfer_one_message) {
-		dev_err(&ctlr->dev, "using default spi_transfer_one_message\n");
 		ctlr->transfer_one_message = spi_transfer_one_message;
 	}
 

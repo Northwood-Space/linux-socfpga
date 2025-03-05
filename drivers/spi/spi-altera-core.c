@@ -73,9 +73,6 @@ static inline struct altera_spi *altera_spi_to_hw(struct spi_device *sdev)
 static void altera_spi_set_cs(struct spi_device *spi, bool is_high)
 {
 	struct altera_spi *hw = altera_spi_to_hw(spi);
-	dev_err(hw->dev,
-			    "%s:%s:%d set_cs %d.\n",
-			    __FILE__, __func__, __LINE__, is_high);
 
 	if (is_high) {
 		hw->imr &= ~ALTERA_SPI_CONTROL_SSO_MSK;

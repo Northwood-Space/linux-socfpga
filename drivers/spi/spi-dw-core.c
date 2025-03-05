@@ -89,7 +89,6 @@ void dw_spi_set_cs(struct spi_device *spi, bool enable)
 {
 	struct dw_spi *dws = spi_controller_get_devdata(spi->controller);
 	bool cs_high = !!(spi->mode & SPI_CS_HIGH);
-	dev_err(&dws->host->dev, "CS_HIGH: %d. Enable: %d", cs_high, enable);
 
 	/*
 	 * DW SPI controller demands any native CS being set in order to
@@ -943,10 +942,8 @@ int dw_spi_add_host(struct device *dev, struct dw_spi *dws)
 	host->setup = dw_spi_setup;
 	host->cleanup = dw_spi_cleanup;
 	if (dws->set_cs) {
-		dev_warn(dev, "Using dws->set_cs \n");
 		host->set_cs = dws->set_cs;
 	} else {
-		dev_warn(dev, "Using dw_spi_set_cs \n");
 		host->set_cs = dw_spi_set_cs;
 	}
 	host->transfer_one = dw_spi_transfer_one;
