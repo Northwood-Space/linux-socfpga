@@ -173,16 +173,13 @@ static int dw_spi_dma_init_generic(struct device *dev, struct dw_spi *dws)
 	if (IS_ERR(dws->rxchan)) {
 		ret = PTR_ERR(dws->rxchan);
 		dws->rxchan = NULL;
-		dev_err(dev, "rx dma request failed: %d", ret);
 		goto err_exit;
 	}
 
 	dws->txchan = dma_request_chan(dev, "tx");
 	if (IS_ERR(dws->txchan)) {
-		dev_err(dev, "tx dma request failed");
 		ret = PTR_ERR(dws->txchan);
 		dws->txchan = NULL;
-		dev_err(dev, "tx dma request failed: %d", ret);
 		goto free_rxchan;
 	}
 
@@ -193,7 +190,6 @@ static int dw_spi_dma_init_generic(struct device *dev, struct dw_spi *dws)
 
 	ret = dw_spi_dma_caps_init(dws);
 	if (ret) {
-		dev_err(dev, "tx dma request failed");
 		goto free_txchan;
 	}
 
