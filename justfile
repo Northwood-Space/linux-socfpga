@@ -1,4 +1,6 @@
-default: clean configure build
+# Display this message
+default:
+  @just --list
 
 # Build Linux Kernel Image for Northwood Beamformer
 [group('Build')]
@@ -12,11 +14,11 @@ clean:
   @make distclean
   @make mrproper
 
-# Configure Linux Kernel Image for Northwood Beamformer
+# Link the nix-build generated linux config to .config
 [group('Build')]
-configure:
-  runPhase configurePhase
-
+link-config:
+  ln $NIX_CONFIGFILE .config
+  
 # Configure linux kernel parameters via menuconfig. You will need to be in the shell with menuconfig = true; in the flake.nix
 [group('Build')]
 menuconfig:

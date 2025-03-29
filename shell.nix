@@ -25,6 +25,7 @@ let
   #
   # This is why we choose to use overrideAttrs
   # https://ryantm.github.io/nixpkgs/using/overrides/#sec-pkg-overrideAttrs
+  configfile = pkgsCross.altera-linux.configfile;
   drv = pkgsCross.altera-linux.overrideAttrs(final: prev: {
     # give it a new name so we can differentiate between nix build derivations and nix shell roots
     pname = "northwood-altera-linux";
@@ -35,7 +36,14 @@ let
       menuconfigAttrs
       xconfigAttrs
     ];
-    modDirVersion = "6.6.22-ga8b714be34bc-dirty";
+    shellHook = ''
+      echo "================================================"
+      echo "==         Caveat Lector                      =="
+      echo "================================================"
+      echo ".config for the $NIX_BUILD located at ${configfile}"
+      echo "If you would like to use this, then run just link-config"
+    '';
+    NIX_CONFIGFILE=configfile;
   });
 in
 drv
