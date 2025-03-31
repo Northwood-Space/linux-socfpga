@@ -47,12 +47,17 @@ let
       echo "==         Caveat Lector                      =="
       echo "================================================"
       echo "This shell pulls in a few extraneous dependencies"
-      echo "The linux configfile is stored in $NIX_CONFIGFILE and can be copied locally using `just link-config`"
+      echo "The linux configfile is stored in $NIX_CONFIGFILE and can be copied locally using \"just link-config\""
+    '' + lib.strings.optionalString menuconfig ''
+      echo "You have menuconfig enabled in your build... Hurrah!"
+    '' + lib.strings.optionalString xconfig ''
+      echo "You have xconfig enabled in your build... Hurrah!"
     '' + lib.strings.optionalString fit-generation ''
       echo "Initrd stored in \$INITRD environment variable."
       echo "Fit Image stored in \$FIT_CONFIG"
       echo "See the buildPhase of northwood-nixpkgs/pkgs/machines/beamformer/generate-fit.nix for building image"
-
+    '' + lib.strings.optionalString (!(xconfig || menuconfig)) ''
+      echo "You have neither menuconfig nor xconfig enabled..."
     '';
     NIX_CONFIGFILE=configfile;
     INITRD="${initrd}/initrd.zst";
