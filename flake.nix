@@ -20,6 +20,7 @@
 
             # menuconfig = true;
             # xconfig = true;
+            fit-generation = true;
           };
         }
       );

@@ -17,7 +17,7 @@ clean:
 # Link the nix-build generated linux config to .config
 [group('Build')]
 link-config:
-  ln $NIX_CONFIGFILE .config
+  ln -sf $NIX_CONFIGFILE .config
   
 # Configure linux kernel parameters via menuconfig. You will need to be in the shell with menuconfig = true; in the flake.nix
 [group('Build')]

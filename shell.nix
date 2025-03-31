@@ -4,8 +4,10 @@
 # Optionally add dependencies for xconfig and menu config 
 , menuconfig ? false
 , xconfig ? false
+, fit-generation ? false
 }:
 let
+  lib = pkgsBuild.lib;
   # If we are aarch64-linux, then we do not need a cross-toolchain.
   # Otherwise, grab the pkgsCross
   #
@@ -21,11 +23,13 @@ let
   pkgsBuild = pkgsCross.buildPackages;
   menuconfigAttrs = if menuconfig then [ pkgsBuild.pkg-config pkgsBuild.ncurses ] else [];
   xconfigAttrs = if xconfig then [ pkgsBuild.pkg-config pkgsBuild.qt5.qtbase ] else [];
+  fitGenerationAttrs = if fit-generation then [ pkgsBuild.zstd pkgsBuild.xz pkgsBuild.ubootTools ] else [];
   # We want to use the same build environment that our nix derivation uses but with some new friends.
   #
   # This is why we choose to use overrideAttrs
   # https://ryantm.github.io/nixpkgs/using/overrides/#sec-pkg-overrideAttrs
   configfile = pkgsCross.altera-linux.configfile;
+  initrd = if fit-generation then pkgsCross.beamformer.netbootRamdisk else "";
   drv = pkgsCross.altera-linux.overrideAttrs(final: prev: {
     # give it a new name so we can differentiate between nix build derivations and nix shell roots
     pname = "northwood-altera-linux";
@@ -35,15 +39,20 @@ let
       # add our optional inputs
       menuconfigAttrs
       xconfigAttrs
+      fitGenerationAttrs
     ];
     shellHook = ''
       echo "================================================"
       echo "==         Caveat Lector                      =="
       echo "================================================"
-      echo ".config for the $NIX_BUILD located at ${configfile}"
-      echo "If you would like to use this, then run just link-config"
+      echo "This shell pulls in a few extraneous dependencies\n"
+      echo "The linux configfile is stored in $NIX_CONFIGFILE and can be copied locally using `just link-config`"
+    '' + lib.strings.optionalString fit-generation ''
+      echo "Initrd stored in \$INITRD environment variable."
+      echo "See the buildPhase of northwood-nixpkgs/pkgs/machines/beamformer/generate-fit.nix for building image"
     '';
     NIX_CONFIGFILE=configfile;
+    INITRD=initrd;
   });
 in
 drv
