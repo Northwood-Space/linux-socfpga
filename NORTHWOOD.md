@@ -1,5 +1,7 @@
 # Northwood Altera Linux
 
+See [Building Linux Kernel](https://www.rocketboards.org/foswiki/Documentation/BuildingBootloaderStratix10#Building_Linux_Kernel) from the Building Bootloader Stratix10 tutorial provided by Altera.
+
 ## Developer Environment
 ```bash
 $ nix develop .#

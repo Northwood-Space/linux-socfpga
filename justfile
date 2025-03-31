@@ -28,3 +28,12 @@ menuconfig:
 [group('Build')]
 xconfig:
   make xconfig
+
+# Build a Flatted uImage Tree (FIT) kernel. Requires Image, initrd.zst, and beamformer.dtb to be at the root.
+[group('Build')]
+fit-image:
+  #!/usr/bin/env bash
+
+  set -euox pipefail
+
+  mkimage -f $FIT_CONFIG kernel.itb

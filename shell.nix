@@ -30,6 +30,7 @@ let
   # https://ryantm.github.io/nixpkgs/using/overrides/#sec-pkg-overrideAttrs
   configfile = pkgsCross.altera-linux.configfile;
   initrd = if fit-generation then pkgsCross.beamformer.netbootRamdisk else "";
+  fit-config = if fit-generation then pkgsBuild.beamformer-fit-config else "";
   drv = pkgsCross.altera-linux.overrideAttrs(final: prev: {
     # give it a new name so we can differentiate between nix build derivations and nix shell roots
     pname = "northwood-altera-linux";
@@ -45,14 +46,17 @@ let
       echo "================================================"
       echo "==         Caveat Lector                      =="
       echo "================================================"
-      echo "This shell pulls in a few extraneous dependencies\n"
+      echo "This shell pulls in a few extraneous dependencies"
       echo "The linux configfile is stored in $NIX_CONFIGFILE and can be copied locally using `just link-config`"
     '' + lib.strings.optionalString fit-generation ''
       echo "Initrd stored in \$INITRD environment variable."
+      echo "Fit Image stored in \$FIT_CONFIG"
       echo "See the buildPhase of northwood-nixpkgs/pkgs/machines/beamformer/generate-fit.nix for building image"
+
     '';
     NIX_CONFIGFILE=configfile;
     INITRD=initrd;
+    FIT_CONFIG=fit-config;
   });
 in
 drv

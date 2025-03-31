@@ -241,17 +241,17 @@
         "sops-nix": "sops-nix"
       },
       "locked": {
-        "lastModified": 1743119614,
-        "narHash": "sha256-Rx176Jy8V0nplbZRPbmWAKjUoQlmB9B6+ww3/thd6Q4=",
+        "lastModified": 1743443442,
+        "narHash": "sha256-zn06aStEKlpgiaQsGTY/J1ZcNnSSdKB/T1UQwSnLrbM=",
         "ref": "main",
-        "rev": "4388c8560e03ce7b45b74c49245a61d719a64fbe",
-        "revCount": 68,
+        "rev": "78340900e0862efaf0b2d23aa55a1155327cd78c",
+        "revCount": 75,
         "type": "git",
         "url": "ssh://git@github.com/Northwood-Space/northwood-nixpkgs"
       },
       "original": {
         "ref": "main",
-        "rev": "4388c8560e03ce7b45b74c49245a61d719a64fbe",
+        "rev": "78340900e0862efaf0b2d23aa55a1155327cd78c",
         "type": "git",
         "url": "ssh://git@github.com/Northwood-Space/northwood-nixpkgs"
       }

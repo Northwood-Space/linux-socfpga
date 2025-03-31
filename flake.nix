@@ -2,7 +2,7 @@
   description = "A very basic flake for building altera linux";
 
   inputs = {
-    northwood-nixpkgs.url = "git+ssh://git@github.com/Northwood-Space/northwood-nixpkgs?ref=main&rev=4388c8560e03ce7b45b74c49245a61d719a64fbe";
+    northwood-nixpkgs.url = "git+ssh://git@github.com/Northwood-Space/northwood-nixpkgs?ref=main&rev=78340900e0862efaf0b2d23aa55a1155327cd78c";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
