@@ -55,7 +55,7 @@ let
 
     '';
     NIX_CONFIGFILE=configfile;
-    INITRD=initrd;
+    INITRD="${initrd}/initrd.zst";
     FIT_CONFIG=fit-config;
   });
 in

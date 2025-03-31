@@ -18,7 +18,12 @@ clean:
 [group('Build')]
 link-config:
   ln -sf $NIX_CONFIGFILE .config
-  
+
+# Link the nix-build generated initrd to our local path
+[group('Build')]
+link-initrd:
+  ln -sf $INITRD initrd.zst
+
 # Configure linux kernel parameters via menuconfig. You will need to be in the shell with menuconfig = true; in the flake.nix
 [group('Build')]
 menuconfig:
